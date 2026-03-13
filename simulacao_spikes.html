@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulação SPIKES — Caso Dona Odete</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f1e35;
+  --panel: #162440;
+  --wall: #1e3050;
+  --floor: #13243a;
+  --pro-coat: #ddeeff;
+  --pro-skin: #f5c5a3;
+  --pat-skin: #c8845a;
+  --pat-shirt: #7b5ea7;
+  --spikes-s: #3a86ff;
+  --spikes-p: #ff6b6b;
+  --spikes-i: #ffd166;
+  --spikes-k: #06d6a0;
+  --spikes-e: #ff9f43;
+  --spikes-s2: #a29bfe;
+  --error: #ff4757;
+  --ok: #2ed573;
+  --white: #ffffff;
+  --text: #e8f0ff;
+  --muted: rgba(232,240,255,0.55);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Nunito Sans', sans-serif;
+  background: #090f1e;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 12px 48px;
+}
+
+/* ── HEADER ── */
+.app-header {
+  width: 100%; max-width: 860px;
+  text-align: center;
+  margin-bottom: 14px;
+}
+.app-header h1 {
+  font-family: 'Nunito', sans-serif;
+  font-size: clamp(1rem, 3vw, 1.45rem);
+  font-weight: 900;
+  color: #fff;
+  margin-bottom: 4px;
+}
+.app-header p { font-size: 0.8rem; color: var(--muted); }
+
+/* SPIKES strip */
+.spikes-strip {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.spikes-pill {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 900;
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  padding: 4px 12px;
+  border-radius: 20px;
+  opacity: 0.35;
+  transition: opacity 0.4s, transform 0.3s;
+  cursor: default;
+}
+.spikes-pill.active { opacity: 1; transform: scale(1.08); }
+.pill-s1 { background: var(--spikes-s); color: #fff; }
+.pill-p  { background: var(--spikes-p); color: #fff; }
+.pill-i  { background: var(--spikes-i); color: #1a1a2e; }
+.pill-k  { background: var(--spikes-k); color: #0d2b1a; }
+.pill-e  { background: var(--spikes-e); color: #fff; }
+.pill-s2 { background: var(--spikes-s2); color: #fff; }
+
+/* ── STAGE ── */
+.stage {
+  width: 100%; max-width: 860px;
+  background: var(--bg);
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 24px 70px rgba(0,0,0,0.6);
+}
+
+/* ── SCENE ── */
+.scene {
+  position: relative;
+  height: 300px;
+  background: var(--wall);
+  overflow: hidden;
+}
+/* floor */
+.scene::before {
+  content:''; position:absolute;
+  bottom:0; left:0; right:0; height:80px;
+  background: var(--floor);
+}
+/* baseboard */
+.scene::after {
+  content:''; position:absolute;
+  bottom:78px; left:0; right:0; height:3px;
+  background: #0e1c30;
+}
+
+/* wall art — subtle grid lines */
+.wall-grid {
+  position:absolute; inset:0;
+  background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* window */
+.win {
+  position:absolute; top:18px; right:55px;
+  width:75px; height:85px;
+  background: linear-gradient(170deg,#87ceeb,#b0e0f8);
+  border:3px solid #2a4060; border-radius:3px;
+}
+.win::before { content:''; position:absolute; top:50%; left:0; right:0; height:2px; background:#2a4060; }
+.win::after  { content:''; position:absolute; left:50%; top:0; bottom:0; width:2px; background:#2a4060; }
+
+/* desk */
+.desk {
+  position:absolute; bottom:78px; left:50%; transform:translateX(-50%);
+  width:260px; height:14px;
+  background:#5a3e2b; border-radius:3px 3px 0 0;
+  box-shadow: 0 4px 0 #3d2a1a;
+}
+.desk::before { content:''; position:absolute; bottom:-22px; left:18px; width:14px; height:22px; background:#3d2a1a; border-radius:0 0 3px 3px; }
+.desk::after  { content:''; position:absolute; bottom:-22px; right:18px; width:14px; height:22px; background:#3d2a1a; border-radius:0 0 3px 3px; }
+
+/* computer */
+.comp {
+  position:absolute; bottom:92px; left:calc(50% + 35px); transform:translateX(-50%);
+}
+.mon { width:52px; height:38px; background:#111; border:2px solid #3a5070; border-radius:3px; }
+.mon-scr { margin:3px; height:28px; background: linear-gradient(135deg,#1a3a60,#1060a0); border-radius:2px; }
+.mon-stand { width:12px; height:7px; background:#3a5070; margin:0 auto; }
+.mon-base  { width:26px; height:3px; background:#3a5070; margin:0 auto; border-radius:2px; }
+
+/* paper */
+.paper {
+  position:absolute; bottom:94px; left:calc(50% - 55px);
+  width:36px; height:46px; background:#f5f0e8; border-radius:2px;
+  transform:rotate(-4deg); box-shadow:2px 2px 4px rgba(0,0,0,0.35);
+}
+.paper::after {
+  content:''; position:absolute; top:6px; left:5px; right:5px; height:2px;
+  background:#d0ccc0; box-shadow:0 5px 0 #d0ccc0, 0 10px 0 #d0ccc0, 0 15px 0 #d0ccc0;
+}
+
+/* insulin pen on desk */
+.insulin-pen {
+  position:absolute; bottom:93px; left:calc(50% - 15px);
+  width:60px; height:8px; background:#1d3557; border-radius:4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+.insulin-pen::after {
+  content:''; position:absolute; right:-8px; top:1px;
+  width:8px; height:6px; background:#aaa; border-radius:0 2px 2px 0;
+}
+
+/* chairs */
+.chair {
+  position:absolute; bottom:60px;
+}
+.ch-back { width:44px; height:34px; background:#2a4060; border-radius:5px 5px 0 0; }
+.ch-seat { width:44px; height:10px; background:#2a4060; border-radius:3px; margin-top:1px; }
+.ch-leg  { width:12px; height:18px; background:#1a3050; border-radius:0 0 3px 3px; margin:0 auto; }
+
+/* characters */
+.character { position:absolute; bottom:78px; }
+.prof { left: calc(50% - 125px); transform:translateX(-50%); }
+.pat  { right:55px; }
+
+/* ── BUBBLES ── */
+.bubble {
+  position:absolute; max-width:240px; min-width:120px;
+  padding:9px 13px; border-radius:14px;
+  font-size:0.8rem; line-height:1.5;
+  box-shadow:0 4px 14px rgba(0,0,0,0.3);
+  opacity:0; pointer-events:none;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  transform: translateY(10px) scale(0.94);
+  z-index:10;
+}
+.bubble.show { opacity:1; transform:translateY(0) scale(1); }
+.bub-pro {
+  background:#fff; color:#1a2744;
+  bottom:200px; left:14px;
+  border-bottom-left-radius:3px;
+}
+.bub-pro::after {
+  content:''; position:absolute; bottom:-8px; left:16px;
+  border:8px solid transparent; border-top-color:#fff; border-bottom:none;
+}
+.bub-pat {
+  background:#e8f5e9; color:#1a2744;
+  bottom:200px; right:14px;
+  border-bottom-right-radius:3px;
+}
+.bub-pat::after {
+  content:''; position:absolute; bottom:-8px; right:16px;
+  border:8px solid transparent; border-top-color:#e8f5e9; border-bottom:none;
+}
+
+/* ── ERROR / OK BADGE ── */
+.scene-badge {
+  position:absolute; top:10px; left:50%; transform:translateX(-50%) translateY(-70px);
+  padding:7px 18px; border-radius:20px;
+  font-family:'Nunito',sans-serif; font-weight:800; font-size:0.75rem;
+  white-space:nowrap; z-index:20;
+  transition: transform 0.45s cubic-bezier(.34,1.56,.64,1);
+  display:flex; align-items:center; gap:6px;
+}
+.scene-badge.show { transform:translateX(-50%) translateY(0); }
+.badge-error { background:var(--error); color:#fff; box-shadow:0 4px 16px rgba(255,71,87,0.45); }
+.badge-ok    { background:var(--ok);    color:#0d2b1a; box-shadow:0 4px 16px rgba(46,213,115,0.35); }
+.badge-info  { background:#3a86ff;      color:#fff; box-shadow:0 4px 16px rgba(58,134,255,0.35); }
+
+/* ── BOTTOM ── */
+.bottom {
+  background: var(--panel);
+  padding:18px 22px 20px;
+  min-height:170px;
+  border-top:1px solid rgba(255,255,255,0.05);
+}
+
+.scene-meta {
+  display:flex; align-items:center; gap:10px; margin-bottom:8px;
+  flex-wrap:wrap;
+}
+.scene-num {
+  font-family:'Nunito',sans-serif; font-size:0.68rem; font-weight:700;
+  color:var(--muted); letter-spacing:0.1em; text-transform:uppercase;
+}
+.spikes-tag {
+  font-family:'Nunito',sans-serif; font-size:0.68rem; font-weight:800;
+  letter-spacing:0.08em; text-transform:uppercase;
+  padding:2px 10px; border-radius:10px;
+}
+
+.speaker-tag {
+  display:inline-block; font-family:'Nunito',sans-serif; font-weight:800;
+  font-size:0.7rem; letter-spacing:0.06em; text-transform:uppercase;
+  padding:2px 10px; border-radius:10px; margin-right:7px;
+}
+.tag-pro  { background:#3a5aff; color:#fff; }
+.tag-pat  { background:#06d6a0; color:#0d2b1a; }
+.tag-narr { background:rgba(255,255,255,0.12); color:rgba(255,255,255,0.65); }
+
+.dialog-text {
+  font-size:0.92rem; color:var(--text); line-height:1.65;
+  margin-bottom:12px; min-height:50px;
+  transition:opacity 0.35s;
+}
+
+/* error / ok card */
+.annot-card {
+  border-radius:0 10px 10px 0; padding:10px 14px;
+  margin-bottom:12px; display:none;
+  animation: slideR 0.4s ease;
+  font-size:0.8rem; line-height:1.5;
+}
+.annot-card.show { display:block; }
+.annot-card.error-card { background:#fff0f0; border-left:4px solid var(--error); }
+.annot-card.ok-card    { background:#e6faf0; border-left:4px solid var(--ok); }
+.annot-title { font-family:'Nunito',sans-serif; font-weight:800; font-size:0.8rem; margin-bottom:3px; }
+.annot-card.error-card .annot-title { color:var(--error); }
+.annot-card.ok-card    .annot-title { color:#0b8a40; }
+.annot-desc.error-card  { color:#7a1a1a; }
+.annot-desc { color:#1a3a2a; }
+.spikes-ref {
+  display:inline-block; margin-top:5px;
+  font-size:0.68rem; font-weight:700; font-family:'Nunito',sans-serif;
+  padding:2px 9px; border-radius:8px; border:1px solid;
+}
+.error-card .spikes-ref { background:rgba(255,71,87,0.1); border-color:rgba(255,71,87,0.3); color:#c0392b; }
+.ok-card .spikes-ref    { background:rgba(46,213,115,0.1); border-color:rgba(46,213,115,0.3); color:#0b8a40; }
+
+@keyframes slideR { from{opacity:0;transform:translateX(-10px)} to{opacity:1;transform:translateX(0)} }
+
+/* controls */
+.controls {
+  display:flex; align-items:center; justify-content:space-between;
+  gap:10px; flex-wrap:wrap;
+}
+.btn {
+  font-family:'Nunito',sans-serif; font-weight:800; font-size:0.87rem;
+  padding:10px 22px; border:none; border-radius:10px; cursor:pointer;
+  transition:all 0.2s;
+}
+.btn-next { background:#3a5aff; color:#fff; box-shadow:0 4px 14px rgba(58,90,255,0.4); }
+.btn-next:hover:not(:disabled) { background:#2a4aee; transform:translateY(-1px); }
+.btn-next:disabled { background:#1e2d50; color:#3a4a70; cursor:not-allowed; box-shadow:none; }
+.btn-back { background:rgba(255,255,255,0.08); color:var(--muted); }
+.btn-back:hover { background:rgba(255,255,255,0.13); }
+
+.prog-dots { display:flex; gap:5px; align-items:center; flex-wrap:wrap; justify-content:center; }
+.dot {
+  width:8px; height:8px; border-radius:50%;
+  background:rgba(255,255,255,0.15); transition:all 0.3s;
+}
+.dot.active { background:#3a5aff; transform:scale(1.35); }
+.dot.done   { background:var(--ok); }
+.dot.err    { background:var(--error); }
+
+/* ── SUMMARY ── */
+.summary {
+  display:none; padding:22px 22px 28px;
+  background:#0f1e35; border-top:1px solid rgba(255,255,255,0.06);
+}
+.summary.show { display:block; }
+.summary h2 {
+  font-family:'Nunito',sans-serif; font-weight:900; font-size:1rem;
+  color:#fff; margin-bottom:16px;
+}
+.sum-section { margin-bottom:18px; }
+.sum-section h3 {
+  font-family:'Nunito',sans-serif; font-weight:800; font-size:0.78rem;
+  letter-spacing:0.1em; text-transform:uppercase; margin-bottom:10px;
+}
+.sum-section.errs h3 { color:var(--error); }
+.sum-section.oks  h3 { color:var(--ok); }
+
+.sum-item {
+  border-radius:10px; padding:11px 14px; margin-bottom:7px;
+  font-size:0.8rem; line-height:1.5;
+}
+.sum-item.err-item { background:rgba(255,71,87,0.1); border:1px solid rgba(255,71,87,0.2); }
+.sum-item.ok-item  { background:rgba(46,213,115,0.08); border:1px solid rgba(46,213,115,0.15); }
+.sum-num { font-family:'Nunito',sans-serif; font-weight:900; font-size:0.68rem; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:3px; }
+.err-item .sum-num { color:var(--error); }
+.ok-item  .sum-num { color:var(--ok); }
+.sum-title { font-family:'Nunito',sans-serif; font-weight:800; font-size:0.86rem; color:#fff; margin-bottom:2px; }
+.sum-desc  { color:var(--muted); }
+.sum-spikes {
+  display:inline-block; margin-top:5px; font-size:0.68rem; font-weight:700;
+  font-family:'Nunito',sans-serif; padding:2px 9px; border-radius:8px;
+}
+.err-item .sum-spikes { background:rgba(255,71,87,0.15); color:#ff6b7a; }
+.ok-item  .sum-spikes { background:rgba(46,213,115,0.12); color:#2ed573; }
+
+/* plan box */
+.plan-box {
+  background:#1e3050; border-radius:12px; padding:16px 18px; margin-top:6px;
+}
+.plan-box h3 {
+  font-family:'Nunito',sans-serif; font-weight:800; font-size:0.82rem;
+  color:#a29bfe; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:10px;
+}
+.plan-item {
+  display:flex; gap:10px; align-items:flex-start;
+  margin-bottom:8px; font-size:0.8rem; color:var(--muted); line-height:1.5;
+}
+.plan-dot {
+  width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-top:5px;
+}
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <h1>🩺 Simulação SPIKES — Caso Dona Odete</h1>
+  <p>Início de Insulina no DM2 · Role-play com análise de erros e boas práticas · Equipe Multiprofissional · 1 hora</p>
+</div>
+
+<!-- SPIKES strip -->
+<div class="spikes-strip">
+  <div class="spikes-pill pill-s1" id="pill0">S — Setting</div>
+  <div class="spikes-pill pill-p"  id="pill1">P — Perception</div>
+  <div class="spikes-pill pill-i"  id="pill2">I — Invitation</div>
+  <div class="spikes-pill pill-k"  id="pill3">K — Knowledge</div>
+  <div class="spikes-pill pill-e"  id="pill4">E — Emotions</div>
+  <div class="spikes-pill pill-s2" id="pill5">S — Strategy</div>
+</div>
+
+<div class="stage">
+
+  <!-- SCENE -->
+  <div class="scene">
+    <div class="wall-grid"></div>
+    <div class="win"></div>
+
+    <!-- furniture -->
+    <div class="desk"></div>
+    <div class="comp">
+      <div class="mon"><div class="mon-scr"></div></div>
+      <div class="mon-stand"></div><div class="mon-base"></div>
+    </div>
+    <div class="paper"></div>
+    <div class="insulin-pen"></div>
+
+    <!-- chairs -->
+    <div class="chair" style="left:calc(50% - 115px);transform:translateX(-50%)">
+      <div class="ch-back"></div><div class="ch-seat"></div><div class="ch-leg"></div>
+    </div>
+    <div class="chair" style="right:50px">
+      <div class="ch-back"></div><div class="ch-seat"></div><div class="ch-leg"></div>
+    </div>
+
+    <!-- Professional -->
+    <div class="character prof" id="profChar">
+      <svg width="68" height="128" viewBox="0 0 68 128">
+        <rect x="9" y="53" width="50" height="60" rx="8" fill="#ddeeff" stroke="#b0c4de" stroke-width="1.5"/>
+        <line x1="34" y1="56" x2="34" y2="108" stroke="#b0c4de" stroke-width="1"/>
+        <rect x="37" y="67" width="14" height="11" rx="2" fill="none" stroke="#b0c4de" stroke-width="1"/>
+        <line x1="40" y1="70" x2="48" y2="70" stroke="#3a86ff" stroke-width="1.5"/>
+        <line x1="44" y1="67" x2="44" y2="76" stroke="#3a86ff" stroke-width="1.5"/>
+        <path d="M16 62 Q10 78 18 83 Q26 88 26 78" stroke="#666" stroke-width="2" fill="none"/>
+        <circle cx="18" cy="84" r="4" fill="#999"/>
+        <rect x="27" y="44" width="14" height="12" rx="5" fill="#f5c5a3"/>
+        <ellipse cx="34" cy="30" rx="15" ry="17" fill="#f5c5a3" stroke="#e8a87c" stroke-width="1"/>
+        <ellipse cx="34" cy="18" rx="15" ry="9" fill="#3d2b1f"/>
+        <ellipse cx="20" cy="26" rx="6" ry="9" fill="#3d2b1f"/>
+        <ellipse cx="48" cy="26" rx="6" ry="9" fill="#3d2b1f"/>
+        <circle cx="28" cy="31" r="2.5" fill="#2d1f0e"/>
+        <circle cx="40" cy="31" r="2.5" fill="#2d1f0e"/>
+        <circle cx="29" cy="30" r="1" fill="white"/>
+        <circle cx="41" cy="30" r="1" fill="white"/>
+        <path d="M29 39 Q34 41 39 39" stroke="#c4846a" stroke-width="1.5" fill="none"/>
+        <rect x="1" y="56" width="11" height="34" rx="5" fill="#ddeeff" stroke="#b0c4de" stroke-width="1"/>
+        <rect x="56" y="56" width="11" height="34" rx="5" fill="#ddeeff" stroke="#b0c4de" stroke-width="1"/>
+        <ellipse cx="6" cy="93" rx="7" ry="5" fill="#f5c5a3"/>
+        <ellipse cx="62" cy="93" rx="7" ry="5" fill="#f5c5a3"/>
+        <rect x="12" y="72" width="20" height="11" rx="2" fill="white"/>
+        <line x1="15" y1="76" x2="29" y2="76" stroke="#ddd" stroke-width="1"/>
+        <line x1="15" y1="79" x2="25" y2="79" stroke="#ddd" stroke-width="1"/>
+      </svg>
+    </div>
+
+    <!-- Patient -->
+    <div class="character pat" id="patChar">
+      <svg width="63" height="128" viewBox="0 0 63 128">
+        <rect x="7" y="53" width="49" height="62" rx="8" fill="#7b5ea7" stroke="#6a4f96" stroke-width="1.5"/>
+        <path d="M22 53 L31 66 L40 53" fill="#6a4f96"/>
+        <rect x="9" y="98" width="19" height="28" rx="4" fill="#2d3a5a"/>
+        <rect x="35" y="98" width="19" height="28" rx="4" fill="#2d3a5a"/>
+        <ellipse cx="18" cy="126" rx="10" ry="4" fill="#1a1a2e"/>
+        <ellipse cx="45" cy="126" rx="10" ry="4" fill="#1a1a2e"/>
+        <rect x="24" y="43" width="15" height="13" rx="5" fill="#c8845a"/>
+        <ellipse cx="31" cy="27" rx="17" ry="19" fill="#c8845a" stroke="#b0703e" stroke-width="1"/>
+        <ellipse cx="31" cy="13" rx="17" ry="9" fill="#2a1500"/>
+        <ellipse cx="15" cy="23" rx="6" ry="10" fill="#2a1500"/>
+        <ellipse cx="47" cy="23" rx="6" ry="10" fill="#2a1500"/>
+        <ellipse cx="15" cy="26" rx="3" ry="6" fill="#666" opacity="0.4"/>
+        <ellipse cx="47" cy="26" rx="3" ry="6" fill="#666" opacity="0.4"/>
+        <circle cx="24" cy="29" r="2.5" fill="#2d1a0e"/>
+        <circle cx="38" cy="29" r="2.5" fill="#2d1a0e"/>
+        <circle cx="25" cy="28" r="1" fill="white"/>
+        <circle cx="39" cy="28" r="1" fill="white"/>
+        <path d="M21 24 Q25 22 29 24" stroke="#1a0800" stroke-width="1.5" fill="none"/>
+        <path d="M33 24 Q37 22 41 24" stroke="#1a0800" stroke-width="1.5" fill="none"/>
+        <path d="M25 37 Q31 38 37 37" stroke="#a0604a" stroke-width="1.5" fill="none"/>
+        <rect x="0" y="56" width="10" height="37" rx="5" fill="#7b5ea7" stroke="#6a4f96" stroke-width="1"/>
+        <rect x="53" y="56" width="10" height="37" rx="5" fill="#7b5ea7" stroke="#6a4f96" stroke-width="1"/>
+        <ellipse cx="5" cy="96" rx="6" ry="5" fill="#c8845a"/>
+        <ellipse cx="58" cy="96" rx="6" ry="5" fill="#c8845a"/>
+      </svg>
+    </div>
+
+    <!-- Bubbles -->
+    <div class="bubble bub-pro" id="bubPro"></div>
+    <div class="bubble bub-pat" id="bubPat"></div>
+
+    <!-- Badge -->
+    <div class="scene-badge" id="sceneBadge">
+      <span id="badgeIcon">⚠️</span>
+      <span id="badgeText">Erro</span>
+    </div>
+  </div>
+
+  <!-- BOTTOM PANEL -->
+  <div class="bottom">
+    <div class="scene-meta">
+      <span class="scene-num" id="sceneNum">Cena 1 de 12</span>
+      <span class="spikes-tag" id="spikesTag" style="display:none"></span>
+    </div>
+    <div class="dialog-text" id="dialogText"></div>
+    <div class="annot-card" id="annotCard">
+      <div class="annot-title" id="annotTitle"></div>
+      <div id="annotDesc"></div>
+    </div>
+    <div class="controls">
+      <button class="btn btn-back" id="btnBack" onclick="prevScene()">← Voltar</button>
+      <div class="prog-dots" id="progDots"></div>
+      <button class="btn btn-next" id="btnNext" onclick="nextScene()">Próximo →</button>
+    </div>
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="summary" id="summary">
+    <h2>📋 Análise da Consulta — Protocolo SPIKES</h2>
+
+    <div class="sum-section errs">
+      <h3>⚠ Erros identificados</h3>
+      <div id="errsList"></div>
+    </div>
+
+    <div class="sum-section oks">
+      <h3>✓ O que fazer corretamente</h3>
+      <div id="oksList"></div>
+    </div>
+
+    <div class="plan-box">
+      <h3>🗓 Sugestão de roteiro para 1 hora</h3>
+      <div class="plan-item"><div class="plan-dot" style="background:#3a86ff"></div><div><strong style="color:#fff">0–10 min:</strong> Apresentar o caso clínico e o protocolo SPIKES em slides</div></div>
+      <div class="plan-item"><div class="plan-dot" style="background:#ff6b6b"></div><div><strong style="color:#fff">10–25 min:</strong> Exibir esta simulação com pausas para discussão em cada erro</div></div>
+      <div class="plan-item"><div class="plan-dot" style="background:#ffd166"></div><div><strong style="color:#fff">25–45 min:</strong> Role-play em duplas/trios com o checklist de avaliação</div></div>
+      <div class="plan-item"><div class="plan-dot" style="background:#06d6a0"></div><div><strong style="color:#fff">45–60 min:</strong> Debriefing em plenária: o que funcionou? o que melhorar?</div></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// SPIKES pill index mapping
+const spikesMap = {
+  'S1': 0, 'P': 1, 'I': 2, 'K': 3, 'E': 4, 'S2': 5
+};
+const spikesColors = {
+  'S1': '#3a86ff', 'P': '#ff6b6b', 'I': '#ffd166', 'K': '#06d6a0', 'E': '#ff9f43', 'S2': '#a29bfe'
+};
+const spikesNames = {
+  'S1': 'S — Setting', 'P': 'P — Perception', 'I': 'I — Invitation',
+  'K': 'K — Knowledge', 'E': 'E — Emotions', 'S2': 'S — Strategy'
+};
+
+const scenes = [
+  {
+    speaker: 'narr',
+    spikes: null,
+    text: 'Dona Odete é uma velha conhecida da UBS. Faz uso de Metformina + Gliclazida em dose máxima há anos. Apesar de já terem conversado sobre insulina antes, ela sempre recusou. Hoje, seus últimos exames mostram Glicemia de jejum 340 mg/dL e HbA1c de 11%. Ela veio acompanhada de sua filha Joana. A Enfermeira Ana e a Farmacêutica Maria irão conduzi-la neste dia — o dia de iniciar a insulina.',
+    bubPro: '', bubPat: '',
+    annot: null
+  },
+  {
+    speaker: 'pro',
+    spikes: 'S1',
+    text: '— Dona Odete e Joana chegam. A Enfermeira Ana abre a porta da sala de curativo (porta entreaberta, corredor movimentado, outra técnica entra para pegar material). "Dona Odete, pode entrar, senta aqui." — sem convidar a Joana, sem fechar a porta.',
+    bubPro: 'Dona Odete, pode entrar!',
+    bubPat: 'Bom dia, Enfermeira Ana...',
+    annot: {
+      type: 'error',
+      title: 'Erro — S (Setting): Ambiente sem privacidade e sem acolher o acompanhante',
+      desc: 'O Setting exige: sala reservada, porta fechada, sem interrupções, celular silenciado. Crucialmente, o acompanhante (Joana) deve ser explicitamente convidado a participar. A presença da família é um recurso terapêutico fundamental na aceitação da insulina — ignorá-la é uma falha no Setting.',
+      spikes: 'S — Setting'
+    }
+  },
+  {
+    speaker: 'pro',
+    spikes: 'S1',
+    text: '✅ Correção: A Enfermeira Ana conduz Dona Odete e Joana para a sala reservada, fecha a porta, silencia o celular. "Dona Odete, que bom que a Joana veio junto! Ela pode ficar à vontade aqui." — acomoda as duas, senta no mesmo nível, mantém contato visual.',
+    bubPro: 'Que bom que a Joana veio junto! Entrem, fechem a porta.',
+    bubPat: 'Ai, que bom... eu precisava mesmo de apoio.',
+    annot: {
+      type: 'ok',
+      title: 'S (Setting): Ambiente preparado e acompanhante acolhida',
+      desc: 'A sala reservada, sem interrupções, com a filha Joana incluída ativamente, cria um ambiente de segurança para uma conversa difícil. Isso é especialmente importante porque Dona Odete já recusou a insulina antes — o contexto emocional precisa estar favorável.',
+      spikes: 'S — Setting'
+    }
+  },
+  {
+    speaker: 'pro',
+    spikes: 'P',
+    text: '"Dona Odete, a gente já conversou sobre insulina outras vezes, né? Antes de eu falar dos seus exames de hoje, quero entender — o que a senhora sabe sobre como está seu diabetes agora? E o que a Joana sabe também?" — abre espaço para as duas.',
+    bubPro: 'O que a senhora sabe sobre como está seu diabetes hoje?',
+    bubPat: 'Sei que não tá bem... mas não sei o quanto.',
+    annot: {
+      type: 'ok',
+      title: 'P (Perception): Avalia o entendimento da paciente e da acompanhante',
+      desc: 'A Enfermeira Ana não parte do zero nem repete o que já foi dito. Ela explora o entendimento atual de Dona Odete e da filha Joana — um diferencial importante, pois a família influencia diretamente a aceitação ou recusa ao tratamento. Essa escuta calibra o quanto de informação nova será necessária.',
+      spikes: 'P — Perception'
+    }
+  },
+  {
+    speaker: 'pat',
+    spikes: 'P',
+    text: 'Joana intervém: "Eu já falei pra minha mãe que ela precisa tomar insulina! Ela teima demais. Toda vez que o médico fala nisso, ela muda de assunto." — Dona Odete baixa a cabeça.',
+    bubPro: '',
+    bubPat: 'Ela teima demais! Toda vez muda de assunto...',
+    annot: null
+  },
+  {
+    speaker: 'pro',
+    spikes: 'P',
+    text: '"Eu entendo, Joana. E a senhora, Dona Odete — quando a gente conversou sobre insulina antes, o que passou pela sua cabeça? O que te fez não querer?" — dirige-se a Dona Odete com suavidade, sem alijar a filha.',
+    bubPro: 'Dona Odete, o que te fez não querer a insulina antes?',
+    bubPat: 'Eu... tenho medo. Meu marido usou insulina e nunca mais saiu da cama.',
+    annot: {
+      type: 'ok',
+      title: 'P (Perception): Explora a recusa anterior sem julgamento',
+      desc: 'A enfermeira não reforça a pressão da filha nem ignora a resistência de Dona Odete. Ela vai direto à origem da recusa — um medo concreto, enraizado na experiência familiar com o marido. Identificar essa crença é o passo mais importante antes de qualquer informação nova.',
+      spikes: 'P — Perception'
+    }
+  },
+  {
+    speaker: 'pro',
+    spikes: 'I',
+    text: '"Dona Odete, obrigada por me contar isso. Faz todo sentido ter esse medo. Antes de continuar — a senhora gostaria que eu explicasse o que os exames de hoje mostram e o que isso significa para o seu tratamento? Posso ir devagar, como a senhora preferir."',
+    bubPro: 'Quer que eu explique os exames de hoje? Posso ir no seu ritmo.',
+    bubPat: 'Sim... pode falar. Eu quero saber.',
+    annot: {
+      type: 'ok',
+      title: 'I (Invitation): Pede permissão antes de informar, respeita o ritmo',
+      desc: 'Mesmo diante de exames gravíssimos (GJ 340, HbA1c 11%), a enfermeira não despeja as informações. Ela obtém a permissão de Dona Odete e sinaliza que o ritmo será dela. Isso é especialmente importante para quem já recusou o tratamento antes — a autonomia precisa ser respeitada para que a aceitação seja real.',
+      spikes: 'I — Invitation'
+    }
+  },
+  {
+    speaker: 'pro',
+    spikes: 'K',
+    text: '"Dona Odete, seu açúcar no sangue está muito alto — 340 em jejum. Pensa assim: o normal é até 100. O remédio que a senhora toma está fazendo o máximo que pode, mas o diabetes foi ficando mais forte com o tempo. Não é culpa da senhora — é a doença que avança." — pausa. "Ficou alguma dúvida até aqui?"',
+    bubPro: 'Seu açúcar está em 340. O remédio fez o máximo. Não é culpa sua.',
+    bubPat: '340... é muito alto mesmo?',
+    annot: {
+      type: 'ok',
+      title: 'K (Knowledge): Linguagem acessível, sem culpa, verificando compreensão',
+      desc: 'A informação é dada em doses pequenas, com analogia concreta (normal é até 100), sem jargão técnico. O ponto mais importante: deixa claro que não é falha da paciente. Isso desfaz a vergonha associada à progressão do DM2 — um obstáculo frequente à aceitação da insulina. A pausa para verificar compreensão é essencial.',
+      spikes: 'K — Knowledge'
+    }
+  },
+  {
+    speaker: 'pro',
+    spikes: 'K',
+    text: '"Sim, Dona Odete. Por isso hoje a gente precisa conversar sobre a insulina de verdade. Mas antes — aquela história do seu marido, que ficou na cama depois da insulina... a senhora sabe o que aconteceu com ele?" — explora o mito antes de desfazê-lo.',
+    bubPro: 'O que aconteceu com seu marido quando usou insulina?',
+    bubPat: 'Ele ficou muito fraco... e depois... foi indo...',
+    annot: {
+      type: 'ok',
+      title: 'K (Knowledge): Explora o mito antes de corrigi-lo — abordagem narrativa',
+      desc: 'Em vez de simplesmente dizer "a insulina não mata", a enfermeira explora o contexto real do marido de Dona Odete. Isso permite entender se o declínio foi pela doença avançada (não pela insulina) e abrir espaço para desfazer o mito com base na história da própria paciente — muito mais eficaz do que uma explicação técnica.',
+      spikes: 'K — Knowledge'
+    }
+  },
+  {
+    speaker: 'pro',
+    spikes: 'E',
+    text: '"Dona Odete, parece que o seu marido já estava muito debilitado quando começou a insulina — provavelmente o diabetes dele já tinha feito muito estrago antes." — Dona Odete começa a chorar baixinho. A enfermeira para completamente, aproxima a cadeira.',
+    bubPro: '',
+    bubPat: '',
+    annot: null
+  },
+  {
+    speaker: 'pro',
+    spikes: 'E',
+    text: '"Pode chorar, Dona Odete. Isso é muito pesado de carregar." — silêncio. Joana pega a mão da mãe. A enfermeira espera, sem pressa, sem tentar "resolver" o choro.',
+    bubPro: 'Pode chorar. Isso é muito pesado de carregar.',
+    bubPat: '...minha filha, eu tenho tanto medo...',
+    annot: {
+      type: 'ok',
+      title: 'E (Emotions): Acolhe o choro, não tenta "resolver" — presença terapêutica',
+      desc: 'Este momento é o coração do SPIKES. A enfermeira não tenta apressar, consolar com dados ou desviar o assunto. Ela nomeou a emoção, validou, ficou em silêncio e deixou a Joana participar naturalmente. Dar espaço ao choro é, ele mesmo, terapêutico — e prepara Dona Odete para ouvir o plano com a cabeça mais tranquila.',
+      spikes: 'E — Emotions/Empathy'
+    }
+  },
+  {
+    speaker: 'pro',
+    spikes: 'E',
+    text: '"Dona Odete, o que aconteceu com o seu marido foi muito sofrido. E faz todo sentido que a senhora tenha associado a insulina a isso. Mas o que eu vi foi que a doença dele já estava muito avançada — e a insulina, na verdade, foi uma tentativa de ajudar. Hoje, com a senhora, é diferente: a gente está agindo agora, antes que chegue nesse ponto." — firma o novo significado sem invalidar o passado.',
+    bubPro: 'Com a senhora é diferente — estamos agindo agora, antes.',
+    bubPat: '...então não vai me deixar igual a ele?',
+    annot: {
+      type: 'ok',
+      title: 'E + K: Reencadra o medo com empatia e informação, sem apagar a história',
+      desc: 'A enfermeira não invalida a experiência de Dona Odete nem diz "não se preocupe". Ela conecta a emoção à informação correta: o marido estava em estágio avançado, a insulina não foi a causa do declínio, e iniciar agora é diferente. Essa reencadragem empática é o que converte resistência em aceitação.',
+      spikes: 'E — Emotions + K — Knowledge'
+    }
+  },
+  {
+    speaker: 'pro',
+    spikes: 'S2',
+    text: 'A Farmacêutica Maria entra na sala — já combinado. "Dona Odete, essa é a Maria, nossa farmacêutica. Ela vai acompanhar a senhora em casa nos primeiros dias — você não vai estar sozinha nisso. A Joana também vai estar. A gente vai juntas." — apresenta o plano de suporte.',
+    bubPro: 'A Maria vai estar com a senhora em casa nos primeiros dias.',
+    bubPat: 'Em casa também? Que alívio...',
+    annot: {
+      type: 'ok',
+      title: 'S (Strategy): Plano concreto, suporte domiciliar, equipe multiprofissional visível',
+      desc: 'A entrada da Farmacêutica Maria é planejada e humanizada — não é uma entrada técnica, é uma apresentação de aliada. O plano inclui acompanhamento domiciliar nos primeiros dias, algo especialmente importante para uma paciente idosa com histórico de recusa. A família (Joana) é integrada formalmente ao plano de cuidado.',
+      spikes: 'S — Strategy/Summary'
+    }
+  },
+  {
+    speaker: 'pro',
+    spikes: 'S2',
+    text: '"Então, Dona Odete, vamos combinar assim: vamos começar com uma injeção pequena à noite, antes de dormir. A Maria vai te mostrar como é simples — e vai passar pelos primeiros dias com a senhora em casa. Tem alguma coisa que ainda te preocupa antes de começar?" — encerra com decisão compartilhada e abertura para dúvidas.',
+    bubPro: 'Tem algo que ainda te preocupa antes de começar?',
+    bubPat: 'Não... acho que agora eu entendi. Pode começar.',
+    annot: {
+      type: 'ok',
+      title: 'S (Strategy): Encerramento com decisão compartilhada e abertura genuína',
+      desc: 'O plano é apresentado de forma concreta (uma injeção à noite, acompanhamento domiciliar) e a pergunta final — "tem algo que ainda te preocupa?" — é genuína, não protocolar. Dona Odete aceita pela primeira vez, não porque foi pressionada, mas porque foi ouvida, acolhida e apoiada por uma equipe que ela já conhece e confia.',
+      spikes: 'S — Strategy/Summary'
+    }
+  }
+];
+
+let current = 0;
+
+function buildDots() {
+  const cont = document.getElementById('progDots');
+  cont.innerHTML = '';
+  scenes.forEach((s, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot';
+    cont.appendChild(d);
+  });
+}
+
+function activateSpikes(key) {
+  document.querySelectorAll('.spikes-pill').forEach(p => p.classList.remove('active'));
+  if (key && spikesMap[key] !== undefined) {
+    document.getElementById('pill' + spikesMap[key]).classList.add('active');
+  }
+}
+
+function updateDots() {
+  document.querySelectorAll('.dot').forEach((d, i) => {
+    d.className = 'dot';
+    if (i < current) {
+      const s = scenes[i];
+      if (s.annot?.type === 'error') d.classList.add('err');
+      else d.classList.add('done');
+    } else if (i === current) d.classList.add('active');
+  });
+}
+
+function showScene(idx) {
+  const sc = scenes[idx];
+  const bubPro = document.getElementById('bubPro');
+  const bubPat = document.getElementById('bubPat');
+  const badge  = document.getElementById('sceneBadge');
+  const card   = document.getElementById('annotCard');
+  const dlg    = document.getElementById('dialogText');
+  const num    = document.getElementById('sceneNum');
+  const tag    = document.getElementById('spikesTag');
+  const btnNext = document.getElementById('btnNext');
+  const btnBack = document.getElementById('btnBack');
+
+  // reset
+  bubPro.classList.remove('show'); bubPat.classList.remove('show');
+  badge.classList.remove('show','badge-error','badge-ok','badge-info');
+  card.classList.remove('show','error-card','ok-card');
+  document.getElementById('summary').classList.remove('show');
+
+  num.textContent = `Cena ${idx + 1} de ${scenes.length}`;
+  btnBack.style.visibility = idx === 0 ? 'hidden' : 'visible';
+
+  // spikes tag
+  if (sc.spikes) {
+    tag.style.display = 'inline-block';
+    tag.textContent = spikesNames[sc.spikes];
+    tag.style.background = spikesColors[sc.spikes] + '22';
+    tag.style.color = spikesColors[sc.spikes];
+    tag.style.border = '1px solid ' + spikesColors[sc.spikes] + '55';
+    activateSpikes(sc.spikes);
+  } else {
+    tag.style.display = 'none';
+    document.querySelectorAll('.spikes-pill').forEach(p => p.classList.remove('active'));
+  }
+
+  // speaker tag
+  let stag = '';
+  if (sc.speaker === 'pro')  stag = '<span class="speaker-tag tag-pro">Profissional</span>';
+  else if (sc.speaker === 'pat') stag = '<span class="speaker-tag tag-pat">Dona Odete</span>';
+  else stag = '<span class="speaker-tag tag-narr">Caso Clínico</span>';
+
+  dlg.style.opacity = 0;
+  setTimeout(() => {
+    dlg.innerHTML = stag + ' ' + sc.text;
+    dlg.style.transition = 'opacity 0.35s';
+    dlg.style.opacity = 1;
+  }, 120);
+
+  // bubbles
+  setTimeout(() => {
+    if (sc.bubPro) { bubPro.textContent = sc.bubPro; bubPro.classList.add('show'); }
+    if (sc.bubPat) { bubPat.textContent = sc.bubPat; bubPat.classList.add('show'); }
+  }, 280);
+
+  // annotation
+  if (sc.annot) {
+    setTimeout(() => {
+      const isErr = sc.annot.type === 'error';
+      badge.classList.add('show', isErr ? 'badge-error' : 'badge-ok');
+      document.getElementById('badgeIcon').textContent = isErr ? '⚠️' : '✅';
+      document.getElementById('badgeText').textContent = isErr ? 'Erro no SPIKES' : 'Boa prática';
+    }, 700);
+
+    setTimeout(() => {
+      card.classList.add('show', sc.annot.type === 'error' ? 'error-card' : 'ok-card');
+      document.getElementById('annotTitle').textContent = sc.annot.title;
+      document.getElementById('annotDesc').innerHTML =
+        sc.annot.desc + `<div class="spikes-ref">${sc.annot.spikes}</div>`;
+    }, 1100);
+  }
+
+  // last scene
+  if (idx === scenes.length - 1) {
+    btnNext.textContent = 'Ver análise completa ↓';
+    btnNext.onclick = showSummary;
+  } else {
+    btnNext.textContent = 'Próximo →';
+    btnNext.onclick = nextScene;
+  }
+  btnNext.disabled = false;
+
+  updateDots();
+}
+
+function nextScene() {
+  if (current < scenes.length - 1) { current++; showScene(current); }
+}
+function prevScene() {
+  if (current > 0) { current--; showScene(current); }
+}
+
+function showSummary() {
+  const sum = document.getElementById('summary');
+  const errsList = document.getElementById('errsList');
+  const oksList  = document.getElementById('oksList');
+  errsList.innerHTML = '';
+  oksList.innerHTML  = '';
+
+  let ei = 1, oi = 1;
+  scenes.filter(s => s.annot).forEach(s => {
+    const div = document.createElement('div');
+    if (s.annot.type === 'error') {
+      div.className = 'sum-item err-item';
+      div.innerHTML = `<div class="sum-num">Erro ${ei++}</div>
+        <div class="sum-title">${s.annot.title.replace(/^Erro — /,'')}</div>
+        <div class="sum-desc">${s.annot.desc}</div>
+        <div class="sum-spikes">${s.annot.spikes}</div>`;
+      errsList.appendChild(div);
+    } else {
+      div.className = 'sum-item ok-item';
+      div.innerHTML = `<div class="sum-num">Boa prática ${oi++}</div>
+        <div class="sum-title">${s.annot.title.replace(/^Correção — |^K revisitado — |^S — /,'')}</div>
+        <div class="sum-desc">${s.annot.desc}</div>
+        <div class="sum-spikes">${s.annot.spikes}</div>`;
+      oksList.appendChild(div);
+    }
+  });
+
+  sum.classList.add('show');
+  sum.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.getElementById('btnNext').textContent = '↺ Reiniciar';
+  document.getElementById('btnNext').onclick = restart;
+}
+
+function restart() {
+  current = 0;
+  document.getElementById('summary').classList.remove('show');
+  document.getElementById('btnNext').textContent = 'Próximo →';
+  document.getElementById('btnNext').onclick = nextScene;
+  showScene(0);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+buildDots();
+showScene(0);
+</script>
+</body>
+</html>
